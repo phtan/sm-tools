@@ -47,6 +47,8 @@ class BusstopDialog(QtGui.QDialog, Ui_Busstop):
 
     def setInfo(self, info):
         self.info = info
+
+
         if self.info is not None:
             self.actionButton.setText("SAVE")
             self.segmentId.setText(str(self.info["segmentId"]))
@@ -67,7 +69,7 @@ class BusstopDialog(QtGui.QDialog, Ui_Busstop):
     def update(self):
         self.errorMessage.setText("")
         self.info = {}
-        global busstoplist
+        busstopList = []
         id = self.id.text()
         if id.isdigit() is False:
             self.errorMessage.setText("id is invalid. It must be a number.")
@@ -78,16 +80,16 @@ class BusstopDialog(QtGui.QDialog, Ui_Busstop):
         tree = ElementTree.parse(myDirectory + '/data.xml')
         root = tree.getroot()
 
-        if id not in busstoplist :
-            for BusStop in root.iter('BusStop'):
-                busstopid = BusStop.find('id').text
-                self.errorMessage.setText(busstopid)
-                if busstopid == id:
-                    self.errorMessage.setText("BusStop ID exists. Please enter another ID.")
-                    return
+        for BusStop in root.iter('BusStop'):
+            busstopid = BusStop.find('id').text
+            busstopList.append(busstopid)
+
+        if id in busstopList and self.isModified is True:
+            self.errorMessage.setText("BusStop ID exists. Please enter another ID.")
+            return
 
         self.info["id"] = int(id)
-        busstoplist.append(id)
+        busstopList.append(id)
 
         offset = self.offset.text()
         if offset.isdigit() is False:
@@ -121,8 +123,6 @@ class BusstopDialog(QtGui.QDialog, Ui_Busstop):
             self.info["hasShelter"] = "false"  
 
         self.info["segmentId"] = int(self.segmentId.text())
-
-
 
         self.isModified = True
         self.accept()
