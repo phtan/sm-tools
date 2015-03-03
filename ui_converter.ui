@@ -1,0 +1,462 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Converter</class>
+ <widget class="QDialog" name="Converter">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>701</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="font">
+   <font>
+    <family>Tahoma</family>
+    <pointsize>12</pointsize>
+   </font>
+  </property>
+  <property name="contextMenuPolicy">
+   <enum>Qt::DefaultContextMenu</enum>
+  </property>
+  <property name="windowTitle">
+   <string notr="true">iSimGis Converter</string>
+  </property>
+  <property name="windowOpacity">
+   <double>4.000000000000000</double>
+  </property>
+  <property name="toolTip">
+   <string notr="true"/>
+  </property>
+  <property name="statusTip">
+   <string notr="true"/>
+  </property>
+  <property name="sizeGripEnabled">
+   <bool>false</bool>
+  </property>
+  <widget class="QTabWidget" name="tabWidget">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>10</y>
+     <width>661</width>
+     <height>271</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>Tahoma</family>
+     <pointsize>13</pointsize>
+    </font>
+   </property>
+   <property name="currentIndex">
+    <number>0</number>
+   </property>
+   <widget class="QWidget" name="XMLtoSH">
+    <attribute name="title">
+     <string>XML to Shapefiles</string>
+    </attribute>
+    <widget class="QPushButton" name="xmlsh_converter_but">
+     <property name="geometry">
+      <rect>
+       <x>240</x>
+       <y>154</y>
+       <width>181</width>
+       <height>35</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>XML TO SHAPEFILES</string>
+     </property>
+    </widget>
+    <widget class="QProgressBar" name="xmlsh_progress">
+     <property name="geometry">
+      <rect>
+       <x>50</x>
+       <y>205</y>
+       <width>561</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="value">
+      <number>0</number>
+     </property>
+    </widget>
+    <widget class="QLabel" name="xmlsh_status">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>205</y>
+       <width>601</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Tahoma</family>
+       <pointsize>13</pointsize>
+       <italic>true</italic>
+      </font>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QWidget" name="">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>641</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QLabel" name="xmlsh_xml_label">
+        <property name="font">
+         <font>
+          <pointsize>13</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>iSim XML File</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="xmlsh_xml_path">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QToolButton" name="xmlsh_xml_browser">
+        <property name="text">
+         <string>...</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+    <widget class="QWidget" name="">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>50</y>
+       <width>641</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="QLabel" name="xmlsh_sh_label">
+        <property name="font">
+         <font>
+          <pointsize>13</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Destination Dir</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="xmlsh_sh_path">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QToolButton" name="xmlsh_sh_browser">
+        <property name="text">
+         <string>...</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+    <widget class="QWidget" name="">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>100</y>
+       <width>641</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_3">
+      <item>
+       <widget class="QLabel" name="xmlsh_formula_l1">
+        <property name="text">
+         <string>Coordinate Conversion Formula</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="xmlsh_formula_l2">
+        <property name="text">
+         <string>[ x' = </string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="xmlsh_formula_x">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="text">
+         <string>x</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="xmlsh_formula_l3">
+        <property name="text">
+         <string>, y' = </string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="xmlsh_formula_y">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="text">
+         <string>y</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="xmlsh_formula_l4">
+        <property name="text">
+         <string>]</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+    <zorder>xmlsh_xml_label</zorder>
+    <zorder>xmlsh_sh_path</zorder>
+    <zorder>xmlsh_sh_label</zorder>
+    <zorder>xmlsh_xml_path</zorder>
+    <zorder>xmlsh_sh_browser</zorder>
+    <zorder>xmlsh_xml_browser</zorder>
+    <zorder>xmlsh_converter_but</zorder>
+    <zorder>xmlsh_status</zorder>
+    <zorder>xmlsh_progress</zorder>
+    <zorder>xmlsh_formula_l1</zorder>
+    <zorder>xmlsh_formula_x</zorder>
+    <zorder>xmlsh_formula_l3</zorder>
+    <zorder>xmlsh_formula_y</zorder>
+    <zorder>xmlsh_formula_l4</zorder>
+    <zorder>xmlsh_formula_l2</zorder>
+   </widget>
+   <widget class="QWidget" name="SHtoXML">
+    <attribute name="title">
+     <string>Shapefiles to XML</string>
+    </attribute>
+    <widget class="QLabel" name="shxml_status">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>205</y>
+       <width>611</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Tahoma</family>
+       <pointsize>13</pointsize>
+       <italic>true</italic>
+      </font>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="shxml_converter_but">
+     <property name="geometry">
+      <rect>
+       <x>241</x>
+       <y>154</y>
+       <width>181</width>
+       <height>35</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>SHAPEFILES TO XML</string>
+     </property>
+    </widget>
+    <widget class="QProgressBar" name="shxml_progress">
+     <property name="geometry">
+      <rect>
+       <x>50</x>
+       <y>205</y>
+       <width>561</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="value">
+      <number>0</number>
+     </property>
+    </widget>
+    <widget class="QWidget" name="">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>641</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_4">
+      <item>
+       <widget class="QLabel" name="shxml_sh_label">
+        <property name="text">
+         <string>Shapefiles Dir</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="shxml_sh_path">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QToolButton" name="shxml_sh_browser">
+        <property name="text">
+         <string>...</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+    <widget class="QWidget" name="">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>50</y>
+       <width>641</width>
+       <height>25</height>
+      </rect>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_5">
+      <item>
+       <widget class="QLabel" name="shxml_xml_label">
+        <property name="text">
+         <string>XML output</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="shxml_xml_path">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QToolButton" name="shxml_xml_browser">
+        <property name="text">
+         <string>...</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+    <widget class="QWidget" name="">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>100</y>
+       <width>641</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_6">
+      <item>
+       <widget class="QLabel" name="shxml_formula_l1">
+        <property name="text">
+         <string>Coordinate Conversion Formula</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="shxml_formula_l2">
+        <property name="text">
+         <string>[ x' = </string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="shxml_formula_x">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="text">
+         <string>x</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="shxml_formula_l3">
+        <property name="text">
+         <string>, y' = </string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="shxml_formula_y">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="text">
+         <string>y</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="shxml_formula_l4">
+        <property name="text">
+         <string>]</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+    <zorder>shxml_sh_browser</zorder>
+    <zorder>shxml_xml_path</zorder>
+    <zorder>shxml_sh_path</zorder>
+    <zorder>shxml_xml_label</zorder>
+    <zorder>shxml_xml_browser</zorder>
+    <zorder>shxml_sh_label</zorder>
+    <zorder>shxml_converter_but</zorder>
+    <zorder>shxml_progress</zorder>
+    <zorder>shxml_status</zorder>
+    <zorder>shxml_formula_l4</zorder>
+    <zorder>shxml_formula_y</zorder>
+    <zorder>shxml_formula_l1</zorder>
+    <zorder>shxml_formula_x</zorder>
+    <zorder>shxml_formula_l2</zorder>
+    <zorder>shxml_formula_l3</zorder>
+   </widget>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
