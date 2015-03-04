@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/plugins/check_network" >
+        <file>icon.png</file>
+    </qresource>
+</RCC>
