@@ -30,7 +30,7 @@ from qgis.utils import *
 
 class BusstopDialog(QtGui.QDialog, Ui_Busstop):
     busstoplist = []
-
+    original_id = 0
     def __init__(self):
         QtGui.QDialog.__init__(self)
         # Set up the user interface from Designer.
@@ -47,12 +47,13 @@ class BusstopDialog(QtGui.QDialog, Ui_Busstop):
 
     def setInfo(self, info):
         self.info = info
-
-
+        global original_id
         if self.info is not None:
+            self.isModified = True
             self.actionButton.setText("SAVE")
             self.segmentId.setText(str(self.info["segmentId"]))
             self.id.setText(str(self.info["id"]))
+            original_id = self.info["id"]
             self.offset.setText(str(self.info["offset"]))
             self.busCapacity.setText(str(self.info["busCapacity"]))
             self.busstopNo.setText(str(self.info["busstopno"]))
@@ -67,12 +68,26 @@ class BusstopDialog(QtGui.QDialog, Ui_Busstop):
         QtCore.QObject.connect(self.actionButton, QtCore.SIGNAL('clicked(bool)'), self.update)
 
     def update(self):
+        global original_id
         self.errorMessage.setText("")
         self.info = {}
         busstopList = []
+
+        # geom = f.geometry()
+        # print geom.asPoint()
+        # QgsPoint
+        # self.info["segmentId"]
+
+
+
         id = self.id.text()
         if id.isdigit() is False:
             self.errorMessage.setText("id is invalid. It must be a number.")
+            return
+
+
+        if len(id) > 5 :
+            self.errorMessage.setText("BusStopId is beyond range. Enter a shorter BusStopID.")
             return
 
         layerfi = iface.activeLayer().dataProvider().dataSourceUri()
@@ -84,7 +99,7 @@ class BusstopDialog(QtGui.QDialog, Ui_Busstop):
             busstopid = BusStop.find('id').text
             busstopList.append(busstopid)
 
-        if id in busstopList and self.isModified is True:
+        if id in busstopList and id != original_id:
             self.errorMessage.setText("BusStop ID exists. Please enter another ID.")
             return
 

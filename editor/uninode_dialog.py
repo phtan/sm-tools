@@ -22,10 +22,15 @@
 from PyQt4 import QtCore, QtGui
 from ui_uninode import Ui_UniNode
 import os
+from xml.etree import ElementTree
+from qgis.core import *
+from qgis.utils import *
 # create the dialog for zoom to point
 
 
 class UniNodeDialog(QtGui.QDialog, Ui_UniNode):
+
+    original_id = 0                                                             # for existing node id
     def __init__(self):
         QtGui.QDialog.__init__(self)
         # Set up the user interface from Designer.
@@ -40,9 +45,13 @@ class UniNodeDialog(QtGui.QDialog, Ui_UniNode):
 
     def setInfo(self, info):
         self.info = info
+#        m_sigmapper = new QSignalMapper(this);
+        global original_id
         if self.info is not None:
+            self.isModified = True
             self.actionButton.setText("SAVE")
             self.nodeId.setText(str(self.info["id"]))
+            original_id = self.info["id"]
             self.aimsunId.setText(str(self.info["aimsunId"]))
             if self.info["firstPair"] is not None:
                 self.firstPair.setText("%s,%s"%(self.info["firstPair"][0],self.info["firstPair"][1]))
@@ -54,9 +63,10 @@ class UniNodeDialog(QtGui.QDialog, Ui_UniNode):
             self.connectorEdit.setPlainText("\n".join(connectors))
         else:
             self.actionButton.setText("ADD")
+
         QtCore.QObject.connect(self.actionButton, QtCore.SIGNAL('clicked(bool)'), self.update)
 
-    
+
     def parsePairField(self, pairText):
         if pairText == "":
             return 0
@@ -80,9 +90,14 @@ class UniNodeDialog(QtGui.QDialog, Ui_UniNode):
         return result
 
     def update(self):
+        global original_id
+
         self.errorMessage.setText("")
         self.info = {}
-        uninodeList = []
+        nodeList = []
+        lanelist = []
+        lanepairlist = []
+
 
         layerfi = iface.activeLayer().dataProvider().dataSourceUri()
         (myDirectory, nameFile) = os.path.split(layerfi)
@@ -90,16 +105,27 @@ class UniNodeDialog(QtGui.QDialog, Ui_UniNode):
         root = tree.getroot()
 
         for uniNode in root.iter('UniNode'):
-            uninodeList.append(uniNode.find('nodeID').text)
+            nodeList.append(uniNode.find('nodeID').text)
 
-
+        for mulNode in root.iter('Intersection'):
+            nodeList.append(mulNode.find('nodeID').text)
 
         nodeId = self.nodeId.text()
-        if nodeId.isdigit() is False:
-            self.errorMessage.setText("nodeId is invalid. It must be a number.")
+
+        if not nodeId :
+            self.errorMessage.setText("NodeId cannot be empty. Please enter NodeID. ")
             return
 
-        if nodeId in uninodeList :
+        if nodeId.isdigit() is False:
+            self.errorMessage.setText("NodeId is invalid. It must be a number.")
+            return
+
+        if len(nodeId) > 5 :
+            self.errorMessage.setText("NodeId is beyond range. Enter a shorter NodeID.")
+            return
+
+
+        if nodeId in nodeList and nodeId != original_id:
             self.errorMessage.setText("Node ID exists. Please enter another ID.")
             return
 
@@ -112,28 +138,54 @@ class UniNodeDialog(QtGui.QDialog, Ui_UniNode):
         self.info["aimsunId"] = int(aimsunId)
 
         firstPair = self.firstPair.text()
+        # if not firstPair:
+        #     self.errorMessage.setText("the first pair can not be empty.")               # firstPair cannot be empty, only firstPair specified - means unidirection link
+        #     return
+
         self.info["firstPair"] = self.parsePairField(firstPair)
         if self.info["firstPair"] is None:
             self.errorMessage.setText("firstPair is invalid. It must be: number,number")
             return
 
         secondPair = self.secondPair.text()
+
         self.info["secondPair"] = self.parsePairField(secondPair)
         if self.info["secondPair"] is None:
             self.errorMessage.setText("secondPair is invalid. It must be: number,number")
             return      
 
         connectors = self.connectorEdit.toPlainText()
-        if not connectors:
-            self.errorMessage.setText("the connectors can not be empty.")
-            return
+        # if not connectors:
+        #     self.errorMessage.setText("the connectors can not be empty.")
+        #     return
 
-        self.info["connectors"] = self.parseConnectors(connectors)
-        if self.info["connectors"] is None:
-            self.errorMessage.setText("the connectors is invalid format.")
-            return              
+        if connectors :
+            self.info["connectors"] = self.parseConnectors(connectors)
+            if self.info["connectors"] is None:
+                self.errorMessage.setText("The connectors are in invalid format. Please enter in format 'laneFrom, laneTo'.")
+                return
+
+        for con in root.iter('Connector'):
+            lf = int(con.find('laneFrom').text)
+            lt = int(con.find('laneTo').text)
+            lanepairlist.append([lf,lt])
+
+        for lane in root.iter('Lane'):
+            lanelist.append(lane.find('laneID').text)
+
+        if connectors :
+            for connector in self.info["connectors"]:
+                if connector in lanepairlist and nodeId != original_id:
+                    self.errorMessage.setText("A turning already exists between these lanes ")
+                    return
+                if str(connector[0]) not in lanelist or str(connector[1]) not in lanelist :
+                    self.errorMessage.setText("The laneid does not exist.")
+                    return
+                if connector[0] == connector[1] :
+                    self.errorMessage.setText("Lanefrom id and Laneto id cannot be the same.")
+                    return
+        else:
+            self.info["connectors"] = None
 
         self.isModified = True
         self.accept()
-
-

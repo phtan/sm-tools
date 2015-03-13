@@ -23,10 +23,16 @@ from PyQt4 import QtCore, QtGui
 from ui_multinode import Ui_MultiNode
 from qgis.core import *
 import os
+from xml.etree import ElementTree
+from qgis.core import *
+from qgis.utils import *
 # create the dialog for zoom to point
 
 
 class MultiNodeDialog(QtGui.QDialog, Ui_MultiNode):
+
+    original_id = 0
+
     def __init__(self):
         QtGui.QDialog.__init__(self)
         # Set up the user interface from Designer.
@@ -37,12 +43,18 @@ class MultiNodeDialog(QtGui.QDialog, Ui_MultiNode):
         self.setupUi(self)
         self.info = None
         self.isModified = False
+        self.listSegments = None
+
 
     def setInfo(self, info):
         self.info = info
-        if self.info is not None:
+        global original_id
+        self.setSegmentlist()
+        if self.info is not None:               # updating existing element
+            self.isModified = True
             self.actionButton.setText("SAVE")
             self.nodeId.setText(str(self.info["id"]))
+            original_id = self.info["id"]
             self.aimsunId.setText(str(self.info["aimsunId"]))
             if self.info["roadSegmentsAt"] is not None:
                 roadSegmentsAtStr = "\n".join(self.info["roadSegmentsAt"])
@@ -55,7 +67,43 @@ class MultiNodeDialog(QtGui.QDialog, Ui_MultiNode):
                 self.mulConnectorEdit.setPlainText("\n".join(connectorStr))
         else:
             self.actionButton.setText("ADD")
+
+        QtCore.QObject.connect(self.generateid, QtCore.SIGNAL('clicked(bool)'), self.addnewid)
+        QtCore.QObject.connect(self.segmentIDcomboBox, QtCore.SIGNAL('currentIndexChanged(const QString&)'),self.addSegment)
         QtCore.QObject.connect(self.actionButton, QtCore.SIGNAL('clicked(bool)'), self.update)
+
+    def addSegment(self):
+        roadSegmentsAtStr = str(self.segmentIDcomboBox.currentText())
+        self.roadSegmentEdit.append(roadSegmentsAtStr)
+
+
+    def setSegmentlist(self):
+
+        layerfi = iface.activeLayer().dataProvider().dataSourceUri()
+        (myDirectory, nameFile) = os.path.split(layerfi)
+        tree = ElementTree.parse(myDirectory + '/data.xml')
+        root = tree.getroot()
+        for seg in root.iter('Segment'):
+            self.segmentIDcomboBox.addItem(seg.find('segmentID').text)
+
+
+
+    def addnewid(self):
+        nodeList = []
+        layerfi = iface.activeLayer().dataProvider().dataSourceUri()
+        (myDirectory, nameFile) = os.path.split(layerfi)
+        tree = ElementTree.parse(myDirectory + '/data.xml')
+        root = tree.getroot()
+
+        for uniNode in root.iter('UniNode'):
+            nodeList.append(int(uniNode.find('nodeID').text))
+
+        for mulNode in root.iter('Intersection'):
+            nodeList.append(int(mulNode.find('nodeID').text))
+
+        self.nodeId.setText(str(max(nodeList)+1))
+        return
+
 
     def parseRoadSegments(self, text):
         result = []
@@ -77,6 +125,7 @@ class MultiNodeDialog(QtGui.QDialog, Ui_MultiNode):
         currentConnectors = []
         for line in lines:
             parts = line.split(",")
+
             if len(parts) == 1:
                 if currentSegment is not None and len(currentConnectors) > 0:
                     result.append([currentSegment, currentConnectors])
@@ -91,9 +140,13 @@ class MultiNodeDialog(QtGui.QDialog, Ui_MultiNode):
         return result
 
     def update(self):
+        global original_id
         self.errorMessage.setText("")
         self.info = {}
-        mulnodeList = []
+        nodeList = []
+        lanelist = []
+        lanepairlist =[]
+        seglist = []
 
         layerfi = iface.activeLayer().dataProvider().dataSourceUri()
         (myDirectory, nameFile) = os.path.split(layerfi)
@@ -101,15 +154,24 @@ class MultiNodeDialog(QtGui.QDialog, Ui_MultiNode):
         root = tree.getroot()
 
         for mulNode in root.iter('Intersection'):
-            mulnodeList.append(mulNode.find('nodeID').text)
+            nodeList.append(mulNode.find('nodeID').text)
 
+        for uniNode in root.iter('UniNode'):
+            nodeList.append(uniNode.find('nodeID').text)
+
+        for seg in root.iter('Segment'):
+            seglist.append(seg.find('segmentID').text)
 
         nodeId = self.nodeId.text()
         if nodeId.isdigit() is False:
-            self.errorMessage.setText("nodeId is invalid. It must be a number.")
+            self.errorMessage.setText("NodeId is invalid. It must be a number.")
             return
 
-        if nodeId in mulnodeList :
+        if len(nodeId) > 5 :
+            self.errorMessage.setText("NodeId is beyond range. Enter a shorter NodeID.")
+            return
+
+        if nodeId in nodeList and nodeId != original_id :
             self.errorMessage.setText("Node ID exists. Please enter another ID.")
             return
 
@@ -125,14 +187,53 @@ class MultiNodeDialog(QtGui.QDialog, Ui_MultiNode):
         roadSegments = self.roadSegmentEdit.toPlainText()
         if roadSegments:
             self.info["roadSegments"] = self.parseRoadSegments(roadSegments)
+            for seg in self.info["roadSegments"] :
+                if seg not in seglist :
+                    self.errorMessage.setText("Segment id does not exist. Please enter existing segment id.")
+                    return
+
+
 
         self.info["multiConnectors"] = []
         mulConnectors = self.mulConnectorEdit.toPlainText()
         if mulConnectors:
             self.info["multiConnectors"] = self.parseMultiConnectors(mulConnectors)
             if self.info["multiConnectors"] is None:
-                self.errorMessage.setText("the multiConnector is invalid format.")
+                self.errorMessage.setText("The multiconnectors are in invalid format. Please enter in format 'laneFrom, laneTo'.")
+                return
+
+
+
+        for con in root.iter('Connector'):
+            lf = int(con.find('laneFrom').text)
+            lt = int(con.find('laneTo').text)
+            lanepairlist.append([lf,lt])
+
+        for lane in root.iter('Lane'):
+            lanelist.append(lane.find('laneID').text)
+
+        # for multiconnector in self.info["multiConnectors"]:
+ #       self.errorMessage.setText(laneFromlist)
+  #      return
+# and self.info["multiConnectors"][0][1][0][1] in laneTolist)
+
+        for multiconnector in self.info["multiConnectors"]:
+            if multiconnector[1][0] in lanepairlist and nodeId != original_id:
+                self.errorMessage.setText("A turning already exists between these lanes ")
+                return
+            if str(multiconnector[0]) not in seglist :
+                self.errorMessage.setText("The segmentid in multiconnectors does not exist.")
+                return
+            if str(multiconnector[1][0][0]) not in lanelist or str(multiconnector[1][0][1]) not in lanelist :
+                self.errorMessage.setText("The laneid does not exist.")
+                return
+            if multiconnector[1][0][0] == multiconnector[1][0][1] :
+                self.errorMessage.setText("Lanefrom id and Laneto id cannot be the same.")
                 return
 
         self.isModified = True
+
+        #self.errorMessage.setText(str(self.isModified))
+        #return
+
         self.accept()
