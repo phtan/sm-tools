@@ -93,7 +93,8 @@ class XmlToShapefile(QObject):
 
     def parseSegment(self, linkId, segment):
         segmentId = segment.find("segmentID").text
-        attr = [linkId, segmentId]
+        speedLimit = segment.find("maxSpeed").text
+        attr = [linkId, segmentId, speedLimit]
         coordinates = [] 
         polyline = segment.find("polyline")
         if polyline is None:
